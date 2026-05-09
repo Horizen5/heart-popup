@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心形弹窗动画</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; background-color: #f5f5f5; overflow: hidden; height: 100vh; position: relative; }
+        .popup {
+            position: absolute; padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: bold;
+            color: #333; background-color: rgba(255, 255, 255, 0.9); border: 1px solid rgba(0,0,0,0.1);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15); z-index: 1000; animation: fadeIn 0.5s ease-in-out;
+            max-width: 150px; text-align: center;
+        }
+        @media screen and (max-width: 768px) {
+            .popup { padding: 6px 10px; font-size: 10px; max-width: 120px; }
+            .instructions { font-size: 12px; padding: 8px 16px; }
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        .instructions {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background-color: rgba(255,255,255,0.8); padding: 10px 20px; border-radius: 20px;
+            font-size: 14px; text-align: center; z-index: 9999; max-width: 90%;
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions">点击屏幕任意位置关闭所有弹窗</div>
+    <script>
+        const texts = ['好好吃饭，别饿着。', '顺顺利利，万事胜意。', '保持好心情，爱自己。', '天冷了多穿衣服。',
+            '我想你了。', '别熬夜，早点睡。', '你是最棒的。', '照顾好自己。', '开心每一天。',
+            '少喝冷饮，多喝温水。', '记得吃早餐。', '按时吃饭。', '加油，你是最棒的。',
+            '别给自己太大的压力。', '累了就休息一下。', '记得多运动。', '多吃水果蔬菜。',
+            '睡前喝杯温牛奶。', '别感冒了。', '开开心心，快快乐乐。', '你真的很重要。',
+            '做一个快乐的人。', '不要忘记微笑。', '生活明朗，万物可爱。', '今天也要加油哦。',
+            '祝你今天愉快。', '爱你么么哒。', '照顾好你的小情绪。', '世界很大，慢慢来。',
+            '你值得更好的。', '不要难过。', '一切都会好起来的。', '记得想我哦。',
+            '给你一个大大的拥抱。', '做一个善良的人。', '保持对生活的热爱。', '未来可期。',
+            '你就是我的唯一。', '不要放弃梦想。', '努力成为更好的自己。', '你真的很特别。',
+            '愿你一生平安。', '所有的好运都给你。', '你要幸福。', '爱你一万年。',
+            '不离不弃。', '你就是我的小太阳。', '带给你温暖。', '一起加油。',
+            '做一个温柔的人。', '愿你被世界温柔对待。', '好运连连。'];
+        const colors = ['#FFC0CB', '#ADD8E6', '#98FB98', '#FFFACD', '#FFB6C1', '#87CEEB',
+            '#E0FFFF', '#FAFAD2', '#D8BFD8', '#E6E6FA', '#FFE4E1', '#F0FFF0'];
+        const allPopups = [];
+        let heart_n = 100, scatter_n = 150;
+        if (window.innerWidth < 768) { heart_n = 80; scatter_n = 100; }
+        function closeAll() { allPopups.forEach(p => p.remove()); allPopups.length = 0; }
+        function createPopup(text, x, y, bg) {
+            const p = document.createElement('div');
+            p.className = 'popup'; p.textContent = text;
+            p.style.left = `${x}px`; p.style.top = `${y}px`; p.style.backgroundColor = bg;
+            document.body.appendChild(p); allPopups.push(p);
+        }
+        function calculateHeartCoords(n, sw, sh) {
+            const coords = [], scaleFactor = Math.min(sw, sh) / 40;
+            for (let i = 0; i < n; i++) {
+                const t = (i / n) * 2 * Math.PI;
+                const x = 16 * Math.sin(t) ** 3;
+                const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+                coords.push([Math.floor(sw/2 + x*scaleFactor), Math.floor(sh/2 - y*scaleFactor)]);
+            }
+            return coords;
+        }
+        function main() {
+            const sw = window.innerWidth, sh = window.innerHeight;
+            const heartCoords = calculateHeartCoords(heart_n, sw, sh);
+            let i = 0;
+            const heartInterval = setInterval(() => {
+                if (i < heartCoords.length) {
+                    createPopup(texts[Math.floor(Math.random()*texts.length)],
+                        heartCoords[i][0], heartCoords[i][1], colors[Math.floor(Math.random()*colors.length)]);
+                    i++;
+                } else {
+                    clearInterval(heartInterval);
+                    let j = 0;
+                    const scatterInterval = setInterval(() => {
+                        if (j < scatter_n) {
+                            const pw = window.innerWidth < 768 ? 120 : 150;
+                            const ph = window.innerWidth < 768 ? 40 : 50;
+                            createPopup(texts[Math.floor(Math.random()*texts.length)],
+                                Math.floor(Math.random()*(sw-pw)), Math.floor(Math.random()*(sh-ph)),
+                                colors[Math.floor(Math.random()*colors.length)]);
+                            j++;
+                        } else clearInterval(scatterInterval);
+                    }, 5);
+                }
+            }, 20);
+        }
+        document.addEventListener('click', closeAll);
+        document.addEventListener('keydown', e => { if (e.code === 'Space' || e.code === 'Escape') closeAll(); });
+        window.addEventListener('load', main);
+    </script>
+</body>
+</html>
